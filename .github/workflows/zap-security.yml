@@ -22,7 +22,9 @@ jobs:
         run: npm ci
 
       - name: Create reports directory
-        run: mkdir -p reports
+        run: |
+          mkdir -p reports
+          chmod -R 777 reports
 
       - name: Start backend
         run: |
