@@ -5,7 +5,7 @@ on:
 
 jobs:
   zap-scan:
-    name: OWASP ZAP Security Scan
+    name: OWASP ZAP Full Security Scan
     runs-on: ubuntu-latest
 
     steps:
@@ -21,24 +21,79 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install OWASP ZAP
+      - name: Create reports directory
+        run: mkdir -p reports
+
+      - name: Start backend
         run: |
-          wget -q https://github.com/zaproxy/zaproxy/releases/download/v2.16.1/ZAP_2.16.1_Linux.tar.gz -O zap.tar.gz
-          mkdir -p zap-tool
-          tar -xzf zap.tar.gz -C zap-tool --strip-components=1
-          chmod +x zap-tool/zap.sh
+          nohup npm run backend > backend.log 2>&1 &
+          echo $! > backend.pid
 
-      - name: Run OWASP ZAP
-        env:
-          TARGET_URL: https://donaciones-frontend.onrender.com
-          ZAP_PATH: ${{ github.workspace }}/zap-tool/zap.sh
-        run: npm run security:zap:baseline
+      - name: Wait for backend
+        run: |
+          for i in {1..30}; do
+            if curl -fs http://127.0.0.1:3000/api/health; then
+              echo "Backend is ready"
+              break
+            fi
+            echo "Waiting for backend..."
+            sleep 2
+          done
 
-      - name: Upload ZAP report
+      - name: Start frontend
+        run: |
+          nohup npm run dev -- --host 0.0.0.0 > frontend.log 2>&1 &
+          echo $! > frontend.pid
+
+      - name: Wait for frontend
+        run: |
+          for i in {1..30}; do
+            if curl -fs http://127.0.0.1:5173; then
+              echo "Frontend is ready"
+              break
+            fi
+            echo "Waiting for frontend..."
+            sleep 2
+          done
+
+      - name: Show application logs
+        if: always()
+        run: |
+          echo "===== BACKEND LOG ====="
+          cat backend.log || true
+
+          echo "===== FRONTEND LOG ====="
+          cat frontend.log || true
+
+      - name: Run OWASP ZAP Full Scan
+        run: |
+          docker run --network host \
+            -v "${{ github.workspace }}/reports:/zap/wrk/:rw" \
+            ghcr.io/zaproxy/zaproxy:stable \
+            zap-full-scan.py \
+            -t http://127.0.0.1:5173 \
+            -r zap-report.html \
+            -w zap-report.md \
+            -J zap-report.json \
+            -x zap-report.xml \
+            -I
+
+      - name: Upload OWASP ZAP reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: zap-report
+          name: owasp-zap-security-report
           path: reports/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload application logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: application-logs
+          path: |
+            backend.log
+            frontend.log
           if-no-files-found: warn
           retention-days: 14
