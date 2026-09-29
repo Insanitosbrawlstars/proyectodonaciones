@@ -1,81 +1,42 @@
 # Proyecto Donaciones
 
-Aplicación React/Vite para gestionar usuarios, roles y donaciones, con un backend Express, SQLite, JWT y pruebas con Jest/Supertest.
+## Descripción
 
-## JWT en desarrollo local
+Proyecto web para la gestión de donaciones entre empresas, organizaciones y usuarios. La aplicación permite gestionar usuarios, autenticación y diferentes operaciones relacionadas con el sistema de donaciones.
 
-El backend usa `process.env.JWT_SECRET` cuando está configurado. Si no existe, utiliza una clave predeterminada únicamente para desarrollo local, por lo que `npm run backend` funciona sin crear un archivo `.env`. En producción, `JWT_SECRET` es obligatorio y debe configurarse mediante variables de entorno con un valor seguro.
+El proyecto fue desarrollado aplicando prácticas de desarrollo de software, control de versiones, pruebas automatizadas, integración continua y pruebas de seguridad.
 
-## Seguridad con OWASP ZAP
+## Tecnologías utilizadas
 
-Este proyecto incluye una integración sencilla con OWASP ZAP para revisar las categorías que te interesan:
+- React 18
+- Vite
+- React Router
+- Node.js
+- Express
+- SQLite mediante `sql.js`
+- JSON Web Token (JWT)
+- bcrypt
+- Jest
+- SonarCloud
+- OWASP ZAP
+- GitHub
+- GitHub Actions
+- Docker
+- Render
 
-- Control de Acceso Roto (OWASP 01)
-- Fallos Criptográficos (OWASP 04)
-- Fallos de Identificación y Autenticación (OWASP 07)
+## Requisitos
 
-### Cómo ejecutarlo
+Para ejecutar el proyecto localmente se requiere:
 
-1. Arranca el backend localmente:
+- Node.js 20 o superior
+- npm
+- Git
+- Docker, para ejecutar herramientas de seguridad mediante contenedores
+
+## Instalación
+
+Clonar el repositorio:
 
 ```bash
-npm run backend
-```
-
-2. En otra terminal ejecuta:
-
-```bash
-npm run security:zap:baseline
-```
-
-3. Si quieres un escaneo más completo, usa:
-
-```bash
-npm run security:zap:full
-```
-
-La salida se guardará en la carpeta `reports/` con un JSON del análisis.
-
-> Nota: en la imagen Docker estable de ZAP, la opción de escaneo completo se usa con `-quick` y no con `-cha`, porque `-cha` no es compatible con esa versión.
-
-> Recomendación: usa `TARGET_URL` si necesitas apuntar a otra URL distinta, por ejemplo `TARGET_URL=http://localhost:3000 npm run security:zap:baseline`.
->
-> En Windows, si ZAP no está en PATH, puedes usar Docker como alternativa:
->
-> ```powershell
-> npm run backend
-> npm run security:zap:docker
-> ```
->
-> O bien configura la ruta explícita:
->
-> ```powershell
-> $env:ZAP_PATH = "C:\Program Files\OWASP ZAP\zap.bat"
-> npm run security:zap:baseline
-> ```
-
-## CI/CD
-
-El workflow `.github/workflows/ci-cd.yml` se ejecuta en cada `push` a `main` y en cada `pull_request` hacia `main`.
-
-El job de CI:
-
-1. Descarga el repositorio.
-2. Configura Node.js 20 LTS.
-3. Instala dependencias con `npm ci`.
-4. Ejecuta `npm run test:coverage -- --runInBand`.
-5. Verifica los umbrales de cobertura configurados en Jest, actualmente 80% para statements, branches, functions y lines.
-6. Guarda `coverage/` como artifact.
-7. Ejecuta `npm run build` para comprobar el frontend.
-
-Comandos equivalentes en local:
-
-```powershell
-npm ci
-npm run test:coverage -- --runInBand
-npm run build
-```
-
-El workflow incluye una etapa `deployment-pending` deshabilitada explícitamente. No existe todavía un proveedor de hosting configurado, por lo que no se realiza ningún despliegue ficticio. Para habilitar un deployment real será necesario definir el proveedor, la URL o proyecto de destino, el entorno de prueba y los secretos requeridos en GitHub Actions.
-
-Para revisar una ejecución, abre la pestaña **Actions** del repositorio en GitHub, selecciona el workflow **CI/CD** y consulta el job `Tests, coverage and build`. El artifact `coverage` estará disponible cuando termine el job.
+git clone <URL_DEL_REPOSITORIO>
+cd <NOMBRE_DEL_REPOSITORIO>
